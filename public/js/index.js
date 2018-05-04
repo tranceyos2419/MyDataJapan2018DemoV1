@@ -1,5 +1,5 @@
 //Authentication
-var cellUrl = "https://demo.personium.io/u-aizu-100/",
+var cellUrl = "https://demo.personium.io/u-aizu-99/",
     engineEndPoint = "__/html/Engine/getAppAuthToken",
     appUrl = "https://demo.personium.io/app-aizu-health-store/",
     friendUrl = 'https://demo.personium.io/u-aizu-99/',
@@ -344,89 +344,7 @@ getBox = function () {
     });
 }
 
-aizuGetListOfHealthRecords = function () {
-    var top = 300,
-        orderby = "startDate asc",
-        filter = "startDate ge datetimeoffset'2018-02-06T00:00:00+09:00'";
-    var url = box100_location + '/OData/HealthRecord?$top=' + top + '&$orderby=' + orderby;
-    //+ '&$filter=' + filter;
-    return $.ajax({
-        type: "GET",
-        url: url,
-        processData: true,
-        dataType: 'json',
-        headers: {
-            'Authorization': 'Bearer ' + box_access_token,
-            'Accept': 'application/json',
-        }
-    });
-}
-
-friendGetApp = function () {
-    var url = appUrl + engineEndPoint;
-    return $.ajax({
-        type: "POST",
-        url: url,
-        data: {
-            p_target: friendUrl
-        },
-        headers: {
-            'Accept': 'application/json',
-            'x-personium-cors': 'true'
-        }
-    });
-}
-
-getTranscellToken = function () {
-    return $.ajax({
-        type: "POST",
-        url: cellUrl + '__token',
-        processData: true,
-        dataType: 'json',
-        data: {
-            grant_type: "refresh_token",
-            refresh_token: box_refresh_token,
-            p_target: friendUrl
-        },
-        headers: {
-            'Accept': 'application/json'
-        }
-    });
-}
-
-friendGetProtectedBoxAccessToken = function () {
-    return $.ajax({
-        type: "POST",
-        url: friendUrl + '__token',
-        processData: true,
-        dataType: 'json',
-        data: {
-            grant_type: "urn:ietf:params:oauth:grant-type:saml2-bearer",
-            assertion: trancell_access_token,
-            client_id: appUrl,
-            client_secret: friend_access_token
-        },
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-        }
-    });
-}
-
-friendGetBox = function () {
-    return $.ajax({
-        type: "GET",
-        url: friendUrl + '__box',
-        processData: true,
-        dataType: 'json',
-        headers: {
-            'Authorization': 'Bearer ' + friend_get_protected_access_token,
-            'Accept': 'application/json',
-        }
-    });
-}
-
-friendGetListOfHealthRecords = function (n) {
+aizuGetListOfHealthRecords = function (n) {
     /*
     // var filterStepsTest = "substringof('StepCount', type)";
     // var filterStartWith = " startswith(type, 'HK')	";
@@ -448,34 +366,12 @@ friendGetListOfHealthRecords = function (n) {
         processData: true,
         dataType: 'json',
         headers: {
-            'Authorization': 'Bearer ' + friend_get_protected_access_token,
+            'Authorization': 'Bearer ' + box_access_token,
             'Accept': 'application/json',
         }
     });
 }
 
-setHealthRecordsToLocalArrays = function (data, n) {
-    // console.log("N of After setHealthRecordsToLocalArrays1 " + n)
-    console.log("setHealthRecordsToLocalArrays");
-    //Making arrays for graph
-    unitArray[n] = data.d.results[0].unit; //get label of graph
-    for (var i in data.d.results) {
-        console.log(data.d.results[i]);
-        if (!valueSet[n]) valueSet[n] = [] //lazy initilization
-        valueSet[n][i] = Number(data.d.results[i].value);
-        endDate[i] = moment(data.d.results[i].endDate).format('MM DD YYYY HH mm ss');
-        startDate[i] = moment(data.d.results[i].startDate).format('MM DD YYYY HH mm ss');
-        console.log(dataSet[n])
-        console.log("End Date:" + endDate[i])
-        console.log("Start Date:" + startDate[i])
-        console.log("valueSet:" + valueSet[n][i])
-        endDateArray = getDateArray(endDateArray, endDate[i], i)
-        console.log("End Date Array " + endDateArray[i])
-        startDateArray = getDateArray(startDateArray, startDate[i], i)
-        console.log("Start Date Array " + startDateArray[i])
-        numberOfData++;
-    }
-}
 
 //Input
 inputToArray = function (str) {
@@ -577,97 +473,70 @@ $(document).ready(function () {
                             box_refresh_token = protectedBoxData.refresh_token;
                             getBox()
                             console.log("getBoxData");
-                            aizuGetListOfHealthRecords()
-                                .done(function (aizuHealthRecordsData) {
-                                    console.log('aizuHealthRecords');
-                                    console.log(aizuHealthRecordsData);
-                                })
-                            friendGetApp()
-                                .done(function (friendGetAppData) {
-                                    console.log("friendGetApp");
-                                    console.log(friendGetAppData);
-                                    friend_access_token = friendGetAppData.access_token;
-                                    getTranscellToken()
-                                        .done(function (getTranscellTokenData) {
-                                            console.log('getTranscellToken');
-                                            console.log(getTranscellTokenData);
-                                            trancell_access_token = getTranscellTokenData.access_token;
-                                            friendGetProtectedBoxAccessToken()
-                                                .done(function (friendGetProtectedBoxAccessTokenData) {
-                                                    console.log("friendGetProtectedBoxAccessToken");
-                                                    console.log(friendGetProtectedBoxAccessTokenData);
-                                                    friend_get_protected_access_token = friendGetProtectedBoxAccessTokenData.access_token;
-                                                    friendGetBox();
-                                                    console.log("friendGetBox");
-
-                                                    //Implementation
-                                                    $("#getDate").click(function () {
-                                                        var userStartDate = inputToArray($("#startDate").val())
-                                                        var userEndDate = inputToArray($("#endDate").val())
-                                                        console.log("userStartDate" + userStartDate)
-                                                        console.log("userEndDate" + userEndDate)
-                                                        startTimeArray = createArray(userStartDate);
-                                                        endTimeArray = createArray(userEndDate)
-                                                        timeSpan = createTimeSpan(startTimeArray, endTimeArray)
-                                                        initializeDailySum();
-                                                        console.log("timeSpan " + timeSpan)
-                                                        chartDailyTime = createChartArray(timeSpan);
-                                                        console.log("chartDailyTime" + chartDailyTime)
-                                                        Implementation()
-                                                    });
-                                                })
-                                        })
-                                })
                         })
                 });
         })
 
 })
 
+$("#getDate").click(function () {
+    var userStartDate = inputToArray($("#startDate").val())
+    var userEndDate = inputToArray($("#endDate").val())
+    console.log("userStartDate" + userStartDate)
+    console.log("userEndDate" + userEndDate)
+    startTimeArray = createArray(userStartDate);
+    endTimeArray = createArray(userEndDate)
+    timeSpan = createTimeSpan(startTimeArray, endTimeArray)
+    initializeDailySum();
+    console.log("timeSpan " + timeSpan)
+    chartDailyTime = createChartArray(timeSpan);
+    console.log("chartDailyTime" + chartDailyTime)
+    Implementation()
+});
 
 Implementation = function () {
     console.log("Implementation")
-    friendGetListOfHealthRecords(0)
-        .done(function (friendGetListOfHealthRecordsData) {
+    aizuGetListOfHealthRecords(0)
+        .done(function (aizuGetListOfHealthRecordsData) {
             initializationPerGraph();
-            console.log("friendGetListOfHealthRecords")
-            console.log(friendGetListOfHealthRecordsData);
-            setHealthRecordsToLocalArrays(friendGetListOfHealthRecordsData, 0)
+            console.log("aizuGetListOfHealthRecords")
+            console.log(aizuGetListOfHealthRecordsData);
+            setHealthRecordsToLocalArrays(aizuGetListOfHealthRecordsData, 0)
             getHourlySum(0);
             getDailySum(0, timeSpan)
             console.log("dailySum " + dailySum[0])
             chart(0);
         }).done(function () {
-            friendGetListOfHealthRecords(1)
-                .done(function (friendGetListOfHealthRecordsData) {
+            aizuGetListOfHealthRecords(1)
+                .done(function (aizuGetListOfHealthRecordsData) {
                     initializationPerGraph();
-                    console.log("friendGetListOfHealthRecords");
-                    console.log(friendGetListOfHealthRecordsData);
-                    setHealthRecordsToLocalArrays(friendGetListOfHealthRecordsData, 1)
+                    console.log("aizuGetListOfHealthRecords");
+                    console.log(aizuGetListOfHealthRecordsData);
+                    setHealthRecordsToLocalArrays(aizuGetListOfHealthRecordsData, 1)
                     getHourlySum(1);
                     getDailySum(1, timeSpan)
                     console.log("dailySum " + dailySum[1])
                     chart(1);
                 })
         }).done(function () {
-            friendGetListOfHealthRecords(2)
-                .done(function (friendGetListOfHealthRecordsData) {
+            aizuGetListOfHealthRecords(2)
+                .done(function (aizuGetListOfHealthRecordsData) {
                     initializationPerGraph();
-                    console.log("friendGetListOfHealthRecords");
-                    console.log(friendGetListOfHealthRecordsData);
-                    setHealthRecordsToLocalArrays(friendGetListOfHealthRecordsData, 2)
+                    console.log("aizuGetListOfHealthRecords");
+                    console.log(aizuGetListOfHealthRecordsData);
+                    setHealthRecordsToLocalArrays(aizuGetListOfHealthRecordsData, 2)
                     getHourlySum(2);
                     getDailySum(2, timeSpan)
                     console.log("dailySum " + dailySum[2])
                     chart(2);
                 })
         }).done(function () {
-            friendGetListOfHealthRecords(3)
-                .done(function (friendGetListOfHealthRecordsData) {
+            aizuGetListOfHealthRecords(3)
+                .done(function (aizuGetListOfHealthRecordsData) {
                     initializationPerGraph();
-                    console.log("friendGetListOfHealthRecords");
-                    console.log(friendGetListOfHealthRecordsData);
-                    setHealthRecordsToLocalArrays(friendGetListOfHealthRecordsData, 3)
+                    console.log("aizuGetListOfHealthRecords");
+                    console.log(aizuGetListOfHealthRecordsData);
+                    setHealthRecordsToLocalArrays(aizuGetListOfHealthRecordsData, 3)
                     getHourlySum(3);
                     getDailySum(3, timeSpan)
                     console.log("dailySum " + dailySum[3])
