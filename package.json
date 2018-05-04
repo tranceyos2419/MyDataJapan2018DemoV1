@@ -1,0 +1,16 @@
+{
+  "name": "aizuhelathcare",
+  "version": "1.0.0",
+  "description": "aizuhealthcareapp",
+  "main": "app.js",
+  "scripts": {
+    "test": "nodemon app.js"
+  },
+  "author": "Yoshi",
+  "license": "MIT",
+  "dependencies": {
+    "ejs": "^2.5.9",
+    "express": "^4.16.3",
+    "path": "^0.12.7"
+  }
+}

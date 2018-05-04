@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="/js/jquery-3.2.1.min.js">
+    </script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ"
+        crossorigin="anonymous">
+    <title>AizuHelathCareTest</title>
+</head>
+
+<body>
+
+    <h1 class="bg-primary text-center m-3 p-3"> AizuHealthCareTest</h1>
+
+    <h3 class="bg-success text-center m-3 p-3" id="today"></h3>
+    <h4 class="m-3 p-3">Input start date and end date</h4>
+
+    <form action="" class="m-3 p-3">
+        <div class="form-group">
+            <label for="">StartDate</label>
+            <input type="text" class="form-control bg-secondary" id="startDate" placeholder="month/day/year" width="200">
+            <label for="">EndDate</label>
+            <input type="text" class="form-control bg-secondary" id="endDate" placeholder="month/day/year">
+        </div>
+        <input type="button" id="getDate" class="bg-primary" value="See the graph">
+    </form>
+
+    <!-- <img src="https://images.pexels.com/photos/262876/pexels-photo-262876.jpeg?w=940&h=650&dpr=2&auto=compress&cs=tinysrgb" alt="apple" class="img-fluid"> -->
+
+    <!-- Draw Graphs -->
+    <canvas id="myChart"></canvas>
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-6">
+                <canvas id="BasalEnergyBurned" width="550" height="465"></canvas>
+            </div>
+            <div class="col-xs-6">
+                <canvas id="ActiveEnergyBurned" width="550" height="465"></canvas>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-6">
+                <canvas id="DistanceWalkingRunning" width="550" height="465"></canvas>
+            </div>
+            <div class="col-xs-6">
+                <canvas id="StepCount" width="550" height="465"></canvas>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-12">
+                <canvas id="HeartRate" width="550" height="465"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- <div class="m-auto">
+    <button id="get" class="mx-5">Get date</button>
+  </div> -->
+    <!-- <a href="chart.html">See graph</a> -->
+</body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.6.0/Chart.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.20.1/moment.min.js"></script>
+<!-- <script src="test.js">
+</script> -->
+<script type="text/javascript" src="js/index.js"></script>
+
+</html>
