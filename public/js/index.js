@@ -64,6 +64,7 @@ var numberOfData = 0; // for sum
 var d = new Date();
 var h; // to get data until now in daily graph
 var today;
+var weekBefore;
 var timeSpan = [];
 var hours = []; // [0] == 1
 var weeks = [];
@@ -271,13 +272,32 @@ getHour = function () {
 getToday = function () {
     var dd = d.getDate();
     var mm = d.getMonth() + 1; //January is 0!
+    var yy = d.getFullYear();
     if (dd < 10) {
         dd = '0' + dd
     }
     if (mm < 10) {
         mm = '0' + mm
     }
-    today = mm + '/' + dd;
+    today = mm + '/' + dd + '/' + yy;
+}
+
+getWeekBefore = function () {
+    let d = new Date();
+    d.setDate(d.getDate() - 7);
+    d7 = d.getDate();
+    m7 = d.getMonth() + 1;
+    y7 = d.getFullYear();
+
+    if (d7 < 10) {
+        d7 = '0' + d7;
+    }
+    if (m7 < 10) {
+        m7 = '0' + m7
+    }
+    weekBefore = d7 + '/' + m7 + '/' + y7;
+    // console.log('weekBefore '+weekBefore);
+
 }
 
 getUerAuthToken = function () {
@@ -373,6 +393,29 @@ aizuGetListOfHealthRecords = function (n) {
 }
 
 
+setHealthRecordsToLocalArrays = function (data, n) {
+    // console.log("N of After setHealthRecordsToLocalArrays1 " + n)
+    console.log("setHealthRecordsToLocalArrays");
+    //Making arrays for graph
+    unitArray[n] = data.d.results[0].unit; //get label of graph
+    for (var i in data.d.results) {
+        console.log(data.d.results[i]);
+        if (!valueSet[n]) valueSet[n] = [] //lazy initilization
+        valueSet[n][i] = Number(data.d.results[i].value);
+        endDate[i] = moment(data.d.results[i].endDate).format('MM DD YYYY HH mm ss');
+        startDate[i] = moment(data.d.results[i].startDate).format('MM DD YYYY HH mm ss');
+        console.log(dataSet[n])
+        console.log("End Date:" + endDate[i])
+        console.log("Start Date:" + startDate[i])
+        console.log("valueSet:" + valueSet[n][i])
+        endDateArray = getDateArray(endDateArray, endDate[i], i)
+        console.log("End Date Array " + endDateArray[i])
+        startDateArray = getDateArray(startDateArray, startDate[i], i)
+        console.log("Start Date Array " + startDateArray[i])
+        numberOfData++;
+    }
+}
+
 //Input
 inputToArray = function (str) {
     var a = []
@@ -443,6 +486,7 @@ chart = function (n) {
 setTime = function () {
     console.log("Set Time")
     getToday();
+    getWeekBefore();
     getHour();
     createHours();
     initializeHourlySum()
@@ -473,15 +517,18 @@ $(document).ready(function () {
                             box_refresh_token = protectedBoxData.refresh_token;
                             getBox()
                             console.log("getBoxData");
+                            ShowGraph();
                         })
                 });
         })
 
 })
 
-$("#getDate").click(function () {
-    var userStartDate = inputToArray($("#startDate").val())
-    var userEndDate = inputToArray($("#endDate").val())
+ShowGraph = function () {
+    // var userStartDate = inputToArray($("#startDate").val())
+    // var userEndDate = inputToArray($("#endDate").val())
+    var userStartDate = inputToArray('02/26/2018') //today
+    var userEndDate = inputToArray('03/02/2018') //weekdayBefore
     console.log("userStartDate" + userStartDate)
     console.log("userEndDate" + userEndDate)
     startTimeArray = createArray(userStartDate);
@@ -491,8 +538,8 @@ $("#getDate").click(function () {
     console.log("timeSpan " + timeSpan)
     chartDailyTime = createChartArray(timeSpan);
     console.log("chartDailyTime" + chartDailyTime)
-    Implementation()
-});
+    // Implementation()
+};
 
 Implementation = function () {
     console.log("Implementation")
