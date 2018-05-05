@@ -295,8 +295,8 @@ getWeekBefore = function () {
     if (m7 < 10) {
         m7 = '0' + m7
     }
-    weekBefore = d7 + '/' + m7 + '/' + y7;
-    // console.log('weekBefore '+weekBefore);
+    weekBefore = m7 + '/' + d7 + '/' + y7;
+    console.log('weekBefore '+weekBefore);
 
 }
 
@@ -527,8 +527,10 @@ $(document).ready(function () {
 ShowGraph = function () {
     // var userStartDate = inputToArray($("#startDate").val())
     // var userEndDate = inputToArray($("#endDate").val())
-    var userStartDate = inputToArray('02/26/2018') //today
-    var userEndDate = inputToArray('03/02/2018') //weekdayBefore
+    // var userStartDate = inputToArray('02/26/2018') //today
+    // var userEndDate = inputToArray('03/02/2018') //weekdayBefore
+    var userStartDate = inputToArray(weekBefore)
+    var userEndDate = inputToArray(today) //weekdayBefore
     console.log("userStartDate" + userStartDate)
     console.log("userEndDate" + userEndDate)
     startTimeArray = createArray(userStartDate);
