@@ -23,12 +23,19 @@ dataSet = [
     'StepCount',
     'HeartRate'
 ];
+// filterSet = [
+//         "type eq 'HKQuantityTypeIdentifier'"+dataSet[0],
+//         "type eq 'HKQuantityTypeIdentifierActiveEnergyBurned'",
+//         "type eq 'HKQuantityTypeIdentifierDistanceWalkingRunning'",
+//         "type eq 'HKQuantityTypeIdentifierStepCount'",
+//         // "type eq 'HKQuantityTypeIdentifierHeartRate'"
+//     ]
 filterSet = [
     "type eq 'HKQuantityTypeIdentifierBasalEnergyBurned'",
     "type eq 'HKQuantityTypeIdentifierActiveEnergyBurned'",
     "type eq 'HKQuantityTypeIdentifierDistanceWalkingRunning'",
     "type eq 'HKQuantityTypeIdentifierStepCount'",
-    "type eq 'HKQuantityTypeIdentifierHeartRate'"
+    // "type eq 'HKQuantityTypeIdentifierHeartRate'"
 ]
 // filterSet = [
 //   "startDate ge datetimeoffset'2018-02-26T00:00:00+09:00' and endDate le datetimeoffset'2018-03-06T00:00:00+09:00' and type eq 'HKQuantityTypeIdentifierBasalEnergyBurned'",
@@ -70,11 +77,18 @@ var hours = []; // [0] == 1
 var weeks = [];
 var weekForLabel = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 // var timeZone = []; // [Kind][Time]
-
+var graph = null;
 
 
 initializationPerGraph = function () {
     initializeData()
+}
+
+initializetionOfGraph = function (){
+    if(graph !== null){
+        graph.destroy();
+        console.log('Graph is destroyed');
+    }
 }
 
 initializeData = function () {
@@ -437,9 +451,9 @@ inputToArray = function (str) {
 
 
 //Chart
-chart = function (n) {
-    var myChart = document.getElementById(dataSet[n]).getContext("2d");
-    new Chart(myChart, {
+chart = function (position,n) {
+    var myChart = document.getElementById(position).getContext("2d");
+    graph = new Chart(myChart, {
         type: 'bar',
         data: {
             labels: chartDailyTime,
@@ -527,10 +541,10 @@ $(document).ready(function () {
 ShowGraph = function () {
     // var userStartDate = inputToArray($("#startDate").val())
     // var userEndDate = inputToArray($("#endDate").val())
-    // var userStartDate = inputToArray('02/26/2018') //today
-    // var userEndDate = inputToArray('03/02/2018') //weekdayBefore
-    var userStartDate = inputToArray(weekBefore)
-    var userEndDate = inputToArray(today) //weekdayBefore
+    var userStartDate = inputToArray('02/26/2018') //today
+    var userEndDate = inputToArray('03/02/2018') //weekdayBefore
+    // var userStartDate = inputToArray(weekBefore)
+    // var userEndDate = inputToArray(today) //weekdayBefore
     console.log("userStartDate" + userStartDate)
     console.log("userEndDate" + userEndDate)
     startTimeArray = createArray(userStartDate);
@@ -543,67 +557,46 @@ ShowGraph = function () {
     // Implementation()
 };
 
-Implementation = function () {
+document.getElementById('getData').addEventListener('click', function(){ //getting data from checklist
+    var dataPosition = [];
+    $('.form-check input:checked').each(function() {
+    dataPosition.push($(this).val());
+    });
+    for(let i in dataPosition){
+        dataPosition[i] = Number(dataPosition[i])
+        console.log('dataPosition '+dataPosition[i]);
+    }
+    Implementation(dataPosition)
+})
+
+
+AddGraph = function(i){
+    for(j in i){
+        let template = `<div class="col-xs-6">
+        <canvas id="${j}" width="550" height="465"></canvas>
+    </div>`
+        $(".row").append(template)
+    }
+
+}
+
+Implementation = function (array) {
+    initializetionOfGraph(graph)
+    //clear appends
     console.log("Implementation")
-    aizuGetListOfHealthRecords(0)
+    for(let i in array){
+        // add appends
+        AddGraph(i)
+        aizuGetListOfHealthRecords(array[i])
         .done(function (aizuGetListOfHealthRecordsData) {
             initializationPerGraph();
             console.log("aizuGetListOfHealthRecords")
             console.log(aizuGetListOfHealthRecordsData);
-            setHealthRecordsToLocalArrays(aizuGetListOfHealthRecordsData, 0)
-            getHourlySum(0);
-            getDailySum(0, timeSpan)
-            console.log("dailySum " + dailySum[0])
-            chart(0);
-        }).done(function () {
-            aizuGetListOfHealthRecords(1)
-                .done(function (aizuGetListOfHealthRecordsData) {
-                    initializationPerGraph();
-                    console.log("aizuGetListOfHealthRecords");
-                    console.log(aizuGetListOfHealthRecordsData);
-                    setHealthRecordsToLocalArrays(aizuGetListOfHealthRecordsData, 1)
-                    getHourlySum(1);
-                    getDailySum(1, timeSpan)
-                    console.log("dailySum " + dailySum[1])
-                    chart(1);
-                })
-        }).done(function () {
-            aizuGetListOfHealthRecords(2)
-                .done(function (aizuGetListOfHealthRecordsData) {
-                    initializationPerGraph();
-                    console.log("aizuGetListOfHealthRecords");
-                    console.log(aizuGetListOfHealthRecordsData);
-                    setHealthRecordsToLocalArrays(aizuGetListOfHealthRecordsData, 2)
-                    getHourlySum(2);
-                    getDailySum(2, timeSpan)
-                    console.log("dailySum " + dailySum[2])
-                    chart(2);
-                })
-        }).done(function () {
-            aizuGetListOfHealthRecords(3)
-                .done(function (aizuGetListOfHealthRecordsData) {
-                    initializationPerGraph();
-                    console.log("aizuGetListOfHealthRecords");
-                    console.log(aizuGetListOfHealthRecordsData);
-                    setHealthRecordsToLocalArrays(aizuGetListOfHealthRecordsData, 3)
-                    getHourlySum(3);
-                    getDailySum(3, timeSpan)
-                    console.log("dailySum " + dailySum[3])
-                    chart(3);
-                })
+            setHealthRecordsToLocalArrays(aizuGetListOfHealthRecordsData, array[i])
+            getHourlySum(array[i]);
+            getDailySum(array[i], timeSpan)
+            console.log("dailySum " + dailySum[array[i]])
+            chart(i,array[i]);
         })
-    // .done(function(){
-    //   friendGetListOfHealthRecords(4)
-    //   .done(function(friendGetListOfHealthRecordsData){
-    //     initializationPerGraph();
-    //     console.log("friendGetListOfHealthRecords");
-    //     console.log(friendGetListOfHealthRecordsData);
-    //     setHealthRecordsToLocalArrays(friendGetListOfHealthRecordsData,4)
-    //     getHourlyAverageSum(4);
-    //     getDailySum(4,timeSpan)
-    //     console.log("dailySum " + dailySum[4])
-    //     chart(4);
-    //     createWeek();
-    //   })
-    // })
+    }
 }

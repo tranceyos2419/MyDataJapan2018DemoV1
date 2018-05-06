@@ -29,6 +29,31 @@
         <input type="button" id="getDate" class="bg-primary" value="See the graph">
     </form>
 
+    <form action="" class="m-3 p-3">
+        <div class="form-check">
+            <label class="form-check-label">
+                <input class="form-check-input m-3" type="checkbox" value="0"> BasalEnergyBurned
+            </label>
+        </div>
+        <div class="form-check">
+            <label class="form-check-label">
+                <input class="form-check-input m-3" type="checkbox" value="1"> ActiveEnergyBurned
+            </label>
+        </div>
+        <div class="form-check">
+            <label class="form-check-label">
+                <input class="form-check-input m-3" type="checkbox" value="2"> DistanceWalkingRunning
+            </label>
+        </div>
+        <div class="form-check">
+            <label class="form-check-label">
+                <input class="form-check-input m-3" type="checkbox" value="3"> StepCount
+            </label>
+        </div>
+        <input type="button" id="getData" class="ml-5 bg-danger" value="Submit">
+    </form>
+
+
     <!-- <img src="https://images.pexels.com/photos/262876/pexels-photo-262876.jpeg?w=940&h=650&dpr=2&auto=compress&cs=tinysrgb" alt="apple" class="img-fluid"> -->
 
     <!-- Draw Graphs -->
@@ -36,18 +61,18 @@
     <div class="container">
         <div class="row">
             <div class="col-xs-6">
-                <canvas id="BasalEnergyBurned" width="550" height="465"></canvas>
+                <canvas id="0" width="550" height="465"></canvas>
             </div>
             <div class="col-xs-6">
-                <canvas id="ActiveEnergyBurned" width="550" height="465"></canvas>
+                <canvas id="1" width="550" height="465"></canvas>
             </div>
         </div>
         <div class="row">
             <div class="col-xs-6">
-                <canvas id="DistanceWalkingRunning" width="550" height="465"></canvas>
+                <canvas id="2" width="550" height="465"></canvas>
             </div>
             <div class="col-xs-6">
-                <canvas id="StepCount" width="550" height="465"></canvas>
+                <canvas id="3" width="550" height="465"></canvas>
             </div>
         </div>
         <div class="row">
@@ -56,6 +81,15 @@
             </div>
         </div>
     </div>
+
+    <!-- <div class="row">
+            <div class="col-xs-6">
+                <canvas id="BasalEnergyBurned" width="550" height="465"></canvas>
+            </div>
+            <div class="col-xs-6">
+                <canvas id="ActiveEnergyBurned" width="550" height="465"></canvas>
+            </div>
+        </div> -->
 
     <!-- <div class="m-auto">
     <button id="get" class="mx-5">Get date</button>
