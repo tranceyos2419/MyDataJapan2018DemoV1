@@ -541,8 +541,8 @@ $(document).ready(function () {
 ShowGraph = function () {
     // var userStartDate = inputToArray($("#startDate").val())
     // var userEndDate = inputToArray($("#endDate").val())
-    var userStartDate = inputToArray('02/26/2018') //today
-    var userEndDate = inputToArray('03/02/2018') //weekdayBefore
+    var userStartDate = inputToArray('02/25/2018') //today
+    var userEndDate = inputToArray('03/03/2018') //weekdayBefore
     // var userStartDate = inputToArray(weekBefore)
     // var userEndDate = inputToArray(today) //weekdayBefore
     console.log("userStartDate" + userStartDate)
@@ -569,29 +569,34 @@ document.getElementById('getData').addEventListener('click', function(){ //getti
     Implementation(dataPosition)
 })
 
+ClearGraph = function(){
+    $('.col-xs-6').remove();
+    console.log('Removed');
+}
 
-AddGraph = function(i){
-    for(j in i){
+AddGraph = function(array){
+    for(j in array){
+        console.log('J '+j);
         let template = `<div class="col-xs-6">
         <canvas id="${j}" width="550" height="465"></canvas>
     </div>`
         $(".row").append(template)
     }
-
 }
 
 Implementation = function (array) {
     initializetionOfGraph(graph)
     //clear appends
+    ClearGraph()
+            // add appends
+            AddGraph(array)
     console.log("Implementation")
     for(let i in array){
-        // add appends
-        AddGraph(i)
         aizuGetListOfHealthRecords(array[i])
         .done(function (aizuGetListOfHealthRecordsData) {
             initializationPerGraph();
             console.log("aizuGetListOfHealthRecords")
-            console.log(aizuGetListOfHealthRecordsData);
+            // console.log(aizuGetListOfHealthRecordsData);
             setHealthRecordsToLocalArrays(aizuGetListOfHealthRecordsData, array[i])
             getHourlySum(array[i]);
             getDailySum(array[i], timeSpan)
