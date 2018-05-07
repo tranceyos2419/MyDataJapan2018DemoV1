@@ -35,7 +35,7 @@ filterSet = [
     "type eq 'HKQuantityTypeIdentifierActiveEnergyBurned'",
     "type eq 'HKQuantityTypeIdentifierDistanceWalkingRunning'",
     "type eq 'HKQuantityTypeIdentifierStepCount'",
-    // "type eq 'HKQuantityTypeIdentifierHeartRate'"
+    "type eq 'HKQuantityTypeIdentifierHeartRate'"
 ]
 // filterSet = [
 //   "startDate ge datetimeoffset'2018-02-26T00:00:00+09:00' and endDate le datetimeoffset'2018-03-06T00:00:00+09:00' and type eq 'HKQuantityTypeIdentifierBasalEnergyBurned'",
@@ -84,8 +84,8 @@ initializationPerGraph = function () {
     initializeData()
 }
 
-initializetionOfGraph = function (){
-    if(graph !== null){
+initializetionOfGraph = function () {
+    if (graph !== null) {
         graph.destroy();
         console.log('Graph is destroyed');
     }
@@ -118,6 +118,10 @@ initializeDailySum = function () {
             dailySum[i][j] = 0;
         }
     }
+}
+
+initializeHeartRateDate = function () {
+
 }
 
 createChartArray = function (array) {
@@ -196,6 +200,27 @@ getDailySum = function (n, span) {
                 }
             }
         }
+    }
+}
+
+getDailyAverage = function (n, span) {
+    var ave = [];
+
+    for (i = 0; i < numberOfData; i++) {
+        if (endDateArray[i][0] == startDateArray[i][0] && endDateArray[i][1] == startDateArray[i][1]) {
+            for (j in span) {
+                if (span[j][0] == endDateArray[i][0] && span[j][1] == endDateArray[i][1]) {
+                    dailySum[n][j] += valueSet[n][i];
+
+                    if (!ave[j]) ave[j] = []; //lazy initilization
+                    ave[j]++;
+                }
+            }
+        }
+    }
+    //division
+    for (q in ave) {
+        dailySum[n][q] /= ave[q];
     }
 }
 
@@ -310,7 +335,7 @@ getWeekBefore = function () {
         m7 = '0' + m7
     }
     weekBefore = m7 + '/' + d7 + '/' + y7;
-    console.log('weekBefore '+weekBefore);
+    console.log('weekBefore ' + weekBefore);
 
 }
 
@@ -437,21 +462,8 @@ inputToArray = function (str) {
     return a;
 }
 
-// convertUnixToDate = function(u){
-//   //remove unnecessary numbers from fetched data
-//   var s = u.replace(/\D/g,'');
-//   // converting string to number
-//   var x = Number(s)
-//   console.log("UNIX timestamp: " + x);
-//   //covnerting unix timestamp to datetime
-//   var d = moment.unix(x).format("YYYY MMM Do");
-//   console.log("Date: " + d);
-//   return d;
-// }
-
-
 //Chart
-chart = function (position,n) {
+chart = function (position, n) {
     var myChart = document.getElementById(position).getContext("2d");
     graph = new Chart(myChart, {
         type: 'bar',
@@ -489,6 +501,53 @@ chart = function (position,n) {
                 yAxes: [{
                     ticks: {
                         beginAtZero: true
+                    }
+                }]
+            }
+        }
+    })
+}
+
+//HeartRate
+HeartRateLineChart = function (position, n) {
+    var myChart = document.getElementById(position).getContext("2d");
+    graph = new Chart(myChart, {
+        type: 'line',
+        data: {
+            labels: chartDailyTime,
+            datasets: [{
+                label: unitArray[n],
+                data: dailySum[n],
+                fill: false,
+                backgroundColor: "rgb(33, 255, 14)",
+                fillColor: "rgb(33, 255, 14)",
+                borderColor: "rgb(33, 255, 14)",
+                lineTension: 0.1
+            }]
+        },
+        "options": {
+            title: {
+                display: true,
+                text: dataSet[n],
+                fontSize: 22
+            },
+            legend: {
+                display: true,
+                position: "right",
+            },
+            layout: {
+                padding: 50
+            },
+            scales: {
+                xAxes: [{
+                    ticks: {
+                        fontSize: 8
+                    }
+                }],
+                yAxes: [{
+                    ticks: {
+                        beginAtZero: true,
+                        max:100
                     }
                 }]
             }
@@ -557,26 +616,26 @@ ShowGraph = function () {
     // Implementation()
 };
 
-document.getElementById('getData').addEventListener('click', function(){ //getting data from checklist
+document.getElementById('getData').addEventListener('click', function () { //getting data from checklist
     var dataPosition = [];
-    $('.form-check input:checked').each(function() {
-    dataPosition.push($(this).val());
+    $('.form-check input:checked').each(function () {
+        dataPosition.push($(this).val());
     });
-    for(let i in dataPosition){
+    for (let i in dataPosition) {
         dataPosition[i] = Number(dataPosition[i])
-        console.log('dataPosition '+dataPosition[i]);
+        console.log('dataPosition ' + dataPosition[i]);
     }
     Implementation(dataPosition)
 })
 
-ClearGraph = function(){
+ClearGraph = function () {
     $('.col-xs-6').remove();
     console.log('Removed');
 }
 
-AddGraph = function(array){
-    for(j in array){
-        console.log('J '+j);
+AddGraph = function (array) {
+    for (j in array) {
+        console.log('J ' + j);
         let template = `<div class="col-xs-6">
         <canvas id="${j}" width="550" height="465"></canvas>
     </div>`
@@ -587,21 +646,126 @@ AddGraph = function(array){
 Implementation = function (array) {
     initializetionOfGraph(graph)
     //clear appends
+
     ClearGraph()
-            // add appends
-            AddGraph(array)
+    // add appends
+    AddGraph(array)
     console.log("Implementation")
-    for(let i in array){
+    for (let i in array) {
         aizuGetListOfHealthRecords(array[i])
-        .done(function (aizuGetListOfHealthRecordsData) {
-            initializationPerGraph();
-            console.log("aizuGetListOfHealthRecords")
-            // console.log(aizuGetListOfHealthRecordsData);
-            setHealthRecordsToLocalArrays(aizuGetListOfHealthRecordsData, array[i])
-            getHourlySum(array[i]);
-            getDailySum(array[i], timeSpan)
-            console.log("dailySum " + dailySum[array[i]])
-            chart(i,array[i]);
-        })
+            .done(function (aizuGetListOfHealthRecordsData) {
+                initializationPerGraph();
+                console.log("aizuGetListOfHealthRecords")
+                // console.log(aizuGetListOfHealthRecordsData);
+                setHealthRecordsToLocalArrays(aizuGetListOfHealthRecordsData, array[i])
+                // getHourlySum(array[i]);
+
+                console.log("dailySum " + dailySum[array[i]])
+                if (array[i] == 4) {
+                    getDailyAverage(array[i], timeSpan)
+                    // HeartRateData(array[i],timeSpan)
+                    HeartRateLineChart(i, array[i])
+                } else {
+                    getDailySum(array[i], timeSpan)
+                    chart(i, array[i]);
+                }
+            })
     }
 }
+
+
+// convertUnixToDate = function(u){
+//   //remove unnecessary numbers from fetched data
+//   var s = u.replace(/\D/g,'');
+//   // converting string to number
+//   var x = Number(s)
+//   console.log("UNIX timestamp: " + x);
+//   //covnerting unix timestamp to datetime
+//   var d = moment.unix(x).format("YYYY MMM Do");
+//   console.log("Date: " + d);
+//   return d;
+// }
+
+//HeartRateDate for Bubble Chart
+// let heartRate = [];
+// HeartRateData = function(n,span){
+//     let num = 0;
+
+//     for (i = 0; i < numberOfData; i++) {
+//         if (endDateArray[i][0] == startDateArray[i][0] && endDateArray[i][1] == startDateArray[i][1]) {
+//             for (j in span) {
+//                 if (span[j][0] == endDateArray[i][0] && span[j][1] == endDateArray[i][1]) {
+//                     let test = {
+//                         x: null,
+//                         y: null,
+//                         r: 5
+//                     }
+//                     // test.x = endDateArray[i][1]
+//                     test.x = span[j][0] + "/" + span[j][1]
+//                     test.y = valueSet[n][i];
+//                     // console.log('HeartRateData ' + test);
+//                     heartRate[num] = test;
+//                     num++;
+//                     // console.log('test.x '+ test.x);
+//                 }
+//             }
+//         }
+//     }
+// }
+
+
+//Bubble Chart
+// HeartRateBubbleChart = function(position,n){
+//     var myChart = document.getElementById(position).getContext("2d");
+//     var routin = -1;
+//     graph = new Chart(myChart, {
+//         type: 'bubble',
+//         data: {
+//             labels: chartDailyTime,
+//             datasets: [{
+//                 label: 'HeartRate',
+//                 data: heartRate,//HeartRateDate()
+//                 backgroundColor: "rgb(33, 255, 14)",
+//                 fillColor: "rgb(33, 255, 14)",
+//                 borderColor: "rgb(33, 255, 14)",
+//             }]
+//         },
+//         options: {
+//             title: {
+//                 display: true,
+//                 text: dataSet[n],
+//                 fontSize: 22
+//             },
+//             legend: {
+//                 display: true,
+//                 position: "right",
+//             },
+//             layout: {
+//                 padding: 50
+//             },
+//             scales: {
+//                 xAxes: [{
+//                     ticks: {
+//                         stepSize: 0.5,
+//                         callback: function (value, index, values) {
+//                             // if (index < chartDailyTime.length) {
+//                             //     return chartDailyTime[index];
+//                             // }
+//                             console.log('value'+ value);
+//                             console.log('index'+ index);
+//                             console.log('values'+ values);
+//                             routin++;
+//                             console.log("chartDailyTime"+chartDailyTime[routin]);
+//                             return chartDailyTime[routin];
+//                         },
+//                         // min: chartDailyTime[0],
+//                         // max: chartDailyTime[chartDailyTime.length - 1]
+//                     },
+//                     position: 'bottom'
+//                 }],
+//                 yAxes: [{
+//                 }]
+//             }
+//         }
+//     })
+// }
