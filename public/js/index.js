@@ -1,3 +1,4 @@
+//--- Variable ---//
 //Authentication
 var cellUrl = "https://demo.personium.io/u-aizu-99/",
     engineEndPoint = "__/html/Engine/getAppAuthToken",
@@ -15,7 +16,7 @@ var cellUrl = "https://demo.personium.io/u-aizu-99/",
     friend_get_protected_access_token, //friendGetProtectedBoxAccessToken
     box99_location = "	https://demo.personium.io/u-aizu-99/io_personium_demo_aizu-health-store";
 
-//data
+//Getting data from Peronium
 dataSet = [
     'BasalEnergyBurned',
     'ActiveEnergyBurned',
@@ -23,13 +24,7 @@ dataSet = [
     'StepCount',
     'HeartRate'
 ];
-// filterSet = [
-//         "type eq 'HKQuantityTypeIdentifier'"+dataSet[0],
-//         "type eq 'HKQuantityTypeIdentifierActiveEnergyBurned'",
-//         "type eq 'HKQuantityTypeIdentifierDistanceWalkingRunning'",
-//         "type eq 'HKQuantityTypeIdentifierStepCount'",
-//         // "type eq 'HKQuantityTypeIdentifierHeartRate'"
-//     ]
+
 filterSet = [
     "type eq 'HKQuantityTypeIdentifierBasalEnergyBurned'",
     "type eq 'HKQuantityTypeIdentifierActiveEnergyBurned'",
@@ -37,20 +32,7 @@ filterSet = [
     "type eq 'HKQuantityTypeIdentifierStepCount'",
     "type eq 'HKQuantityTypeIdentifierHeartRate'"
 ]
-// filterSet = [
-//   "startDate ge datetimeoffset'2018-02-26T00:00:00+09:00' and endDate le datetimeoffset'2018-03-06T00:00:00+09:00' and type eq 'HKQuantityTypeIdentifierBasalEnergyBurned'",
-//   "startDate ge datetimeoffset'2018-02-26T00:00:00+09:00' and endDate le datetimeoffset'2018-03-06T00:00:00+09:00' and type eq 'HKQuantityTypeIdentifierActiveEnergyBurned'",
-//   "startDate ge datetimeoffset'2018-02-26T00:00:00+09:00' and endDate le datetimeoffset'2018-03-06T00:00:00+09:00' and type eq 'HKQuantityTypeIdentifierDistanceWalkingRunning'",
-//   "startDate ge datetimeoffset'2018-02-26T00:00:00+09:00' and endDate le datetimeoffset'2018-03-06T00:00:00+09:00' and type eq 'HKQuantityTypeIdentifierStepCount'",
-//   "startDate ge datetimeoffset'2018-02-26T00:00:00+09:00' and endDate le datetimeoffset'2018-03-06T00:00:00+09:00' and type eq 'HKQuantityTypeIdentifierHeartRate'"
-//   ]
-// filterSet = [
-//   "endDate ge datetimeoffset'2017-01-01T00:00:00+09:00' and type eq 'HKQuantityTypeIdentifierBasalEnergyBurned'",
-//   "endDate ge datetimeoffset'2017-01-01T00:00:00+09:00' and type eq 'HKQuantityTypeIdentifierActiveEnergyBurned'",
-//   "endDate ge datetimeoffset'2017-01-01T00:00:00+09:00' and type eq 'HKQuantityTypeIdentifierDistanceWalkingRunning'",
-//   "endDate ge datetimeoffset'2017-01-01T00:00:00+09:00' and type eq 'HKQuantityTypeIdentifierStepCount'",
-//   "endDate ge datetimeoffset'2017-01-01T00:00:00+09:00' and type eq 'HKQuantityTypeIdentifierHeartRate'"
-// ]
+
 var valueSet = []; //[all health data]
 var hourlySum = []; // [dataSet][Sum]
 var dailySum = [];
@@ -58,7 +40,6 @@ var n = 0;
 var startTimeArray = [];
 var endTimeArray = [];
 var chartDailyTime = [];
-
 //Health info //linked with i
 var endDate = [];
 var startDate = [];
@@ -74,12 +55,11 @@ var today;
 var weekBefore;
 var timeSpan = [];
 var hours = []; // [0] == 1
-var weeks = [];
-var weekForLabel = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-// var timeZone = []; // [Kind][Time]
-var graph = null;
+var graph = null; //for making graph
+//--- Variable ---//
 
 
+//--- Initialization ---//
 initializationPerGraph = function () {
     initializeData()
 }
@@ -121,9 +101,12 @@ initializeDailySum = function () {
 }
 
 initializeHeartRateDate = function () {
-
 }
+//--- Initialization ---//
 
+
+
+//--- General purpose functions ---//
 createChartArray = function (array) {
     // if(array[0] == 1 && array[23] == 24) return array; //for hourly
     var chartArray = [];
@@ -131,6 +114,13 @@ createChartArray = function (array) {
         chartArray[i] = array[i][0] + "/" + array[i][1]
     }
     return chartArray;
+}
+
+//Time string into an array
+inputToArray = function (str) {
+    var a = []
+    a = str.split("/")
+    return a;
 }
 
 createArray = function (array) {
@@ -141,52 +131,11 @@ createArray = function (array) {
     }
     return array;
 }
+//--- General purpose functions ---//
 
-createTimeSpan = function (start, end) {
-    //By myself
-    var span = [];
-    var q = 0;
-    if (start[2] != end[2]) { //yearly
-    } else if (start[0] != end[0]) { //daily. different month(the output is days)
-        var startMonth = start[0];
-        var endMonth = end[0];
-        var d;
-        for (; startMonth != endMonth; startMonth++) {
-            for (i = start[1]; i <= getLastDate(startMonth); i++) {
-                if (!span[q]) span[q] = [] //lazy initilization
-                span[q][0] = startMonth; //Month
-                span[q][1] = i; //Day
-                q++;
-            }
-        }
-        for (i = 1; i <= end[1]; i++) {
-            if (!span[q]) span[q] = [] //lazy initilization
-            span[q][0] = startMonth;
-            span[q][1] = i;
-            q++;
-        }
-    } else if (start[0] == end[0]) { //daily. same month(the output is days)
-        for (i = start[1]; i <= end[1]; i++) {
-            if (!span[q]) span[q] = [] //lazy initilization
-            span[q][0] = start[0];
-            span[q][1] = i;
-            q++;
-        }
-    } else if (start[0] == end[0] && start[1] == end[1]) { // hourly
-        for (i = 0; i < 24; i++) {
-            span[i] = i + 1;
-        }
-    }
-    return span;
-}
 
-getLastDate = function (month) {
-    var d = new Date(2018, month, 0);
-    d = d.getDate()
-    d = Number(d)
-    return d;
-}
 
+//--- Making DataSet for Graph ---//
 getDailySum = function (n, span) {
     for (i = 0; i < numberOfData; i++) {
         // console.log("endDateArray " + endDateArray[i])
@@ -281,6 +230,20 @@ getDateArray = function (dateArray, date, i) {
     }
     return dateArray
 }
+//--- Making DataSet for Graph ---//
+
+
+
+//---Set up time to make a graph ---//
+//setting time data to make a gprah
+setTime = function () {
+    console.log("Set Time")
+    getToday();
+    getWeekBefore();
+    getHour();
+    createHours();
+    initializeHourlySum()
+}
 
 createHours = function () {
     for (i = 0; i < 24; i++) {
@@ -339,6 +302,55 @@ getWeekBefore = function () {
 
 }
 
+createTimeSpan = function (start, end) {
+    //By myself
+    var span = [];
+    var q = 0;
+    if (start[2] != end[2]) { //yearly
+    } else if (start[0] != end[0]) { //daily. different month(the output is days)
+        var startMonth = start[0];
+        var endMonth = end[0];
+        var d;
+        for (; startMonth != endMonth; startMonth++) {
+            for (i = start[1]; i <= getLastDate(startMonth); i++) {
+                if (!span[q]) span[q] = [] //lazy initilization
+                span[q][0] = startMonth; //Month
+                span[q][1] = i; //Day
+                q++;
+            }
+        }
+        for (i = 1; i <= end[1]; i++) {
+            if (!span[q]) span[q] = [] //lazy initilization
+            span[q][0] = startMonth;
+            span[q][1] = i;
+            q++;
+        }
+    } else if (start[0] == end[0]) { //daily. same month(the output is days)
+        for (i = start[1]; i <= end[1]; i++) {
+            if (!span[q]) span[q] = [] //lazy initilization
+            span[q][0] = start[0];
+            span[q][1] = i;
+            q++;
+        }
+    } else if (start[0] == end[0] && start[1] == end[1]) { // hourly
+        for (i = 0; i < 24; i++) {
+            span[i] = i + 1;
+        }
+    }
+    return span;
+}
+
+getLastDate = function (month) {
+    var d = new Date(2018, month, 0);
+    d = d.getDate()
+    d = Number(d)
+    return d;
+}
+//---Set up time to make a graph  ---//
+
+
+
+//--- Autho ---//
 getUerAuthToken = function () {
     return $.ajax({
         type: "POST",
@@ -402,7 +414,11 @@ getBox = function () {
         }
     });
 }
+//--- Autho ---//
 
+
+
+//--- Get Data from Pesonium ---/
 aizuGetListOfHealthRecords = function (n) {
     /*
     // var filterStepsTest = "substringof('StepCount', type)";
@@ -431,7 +447,6 @@ aizuGetListOfHealthRecords = function (n) {
     });
 }
 
-
 setHealthRecordsToLocalArrays = function (data, n) {
     // console.log("N of After setHealthRecordsToLocalArrays1 " + n)
     console.log("setHealthRecordsToLocalArrays");
@@ -444,8 +459,8 @@ setHealthRecordsToLocalArrays = function (data, n) {
         endDate[i] = moment(data.d.results[i].endDate).format('MM DD YYYY HH mm ss');
         startDate[i] = moment(data.d.results[i].startDate).format('MM DD YYYY HH mm ss');
         console.log(dataSet[n])
-        console.log("End Date:" + endDate[i])
-        console.log("Start Date:" + startDate[i])
+        // console.log("End Date:" + endDate[i])
+        // console.log("Start Date:" + startDate[i])
         console.log("valueSet:" + valueSet[n][i])
         endDateArray = getDateArray(endDateArray, endDate[i], i)
         console.log("End Date Array " + endDateArray[i])
@@ -454,15 +469,27 @@ setHealthRecordsToLocalArrays = function (data, n) {
         numberOfData++;
     }
 }
+//--- Get Data from Pesonium ---/
 
-//Input
-inputToArray = function (str) {
-    var a = []
-    a = str.split("/")
-    return a;
+
+
+//--- Chart ---//
+ClearGraph = function () {
+    $('.col-xs-6').remove();
+    console.log('Removed');
 }
 
-//Chart
+AddGraph = function (array) {
+    for (j in array) {
+        console.log('J ' + j);
+        let template = `<div class="col-xs-6">
+        <canvas id="${j}" width="550" height="465"></canvas>
+    </div>`
+        $(".row").append(template)
+    }
+}
+
+//General Charts
 chart = function (position, n) {
     var myChart = document.getElementById(position).getContext("2d");
     graph = new Chart(myChart, {
@@ -554,19 +581,11 @@ HeartRateLineChart = function (position, n) {
         }
     })
 }
+//--- Chart ---//
 
-//setting time data to make a gprah
-setTime = function () {
-    console.log("Set Time")
-    getToday();
-    getWeekBefore();
-    getHour();
-    createHours();
-    initializeHourlySum()
-}
 
-//Imprementation 03
-// $('button').click(function(){
+
+//--- Main ---//
 $(document).ready(function () {
     //Prepareration
     setTime();
@@ -590,16 +609,15 @@ $(document).ready(function () {
                             box_refresh_token = protectedBoxData.refresh_token;
                             getBox()
                             console.log("getBoxData");
-                            ShowGraph();
+                            SetTimeOfGraph();
                         })
                 });
         })
 
 })
 
-ShowGraph = function () {
-    // var userStartDate = inputToArray($("#startDate").val())
-    // var userEndDate = inputToArray($("#endDate").val())
+//Set span of graph
+SetTimeOfGraph = function () {
     var userStartDate = inputToArray('02/25/2018') //today
     var userEndDate = inputToArray('03/03/2018') //weekdayBefore
     // var userStartDate = inputToArray(weekBefore)
@@ -613,10 +631,10 @@ ShowGraph = function () {
     console.log("timeSpan " + timeSpan)
     chartDailyTime = createChartArray(timeSpan);
     console.log("chartDailyTime" + chartDailyTime)
-    // Implementation()
 };
 
-document.getElementById('getData').addEventListener('click', function () { //getting data from checklist
+// Get checklist
+document.getElementById('getData').addEventListener('click', function () { //getting data from
     var dataPosition = [];
     $('.form-check input:checked').each(function () {
         dataPosition.push($(this).val());
@@ -628,25 +646,9 @@ document.getElementById('getData').addEventListener('click', function () { //get
     Implementation(dataPosition)
 })
 
-ClearGraph = function () {
-    $('.col-xs-6').remove();
-    console.log('Removed');
-}
-
-AddGraph = function (array) {
-    for (j in array) {
-        console.log('J ' + j);
-        let template = `<div class="col-xs-6">
-        <canvas id="${j}" width="550" height="465"></canvas>
-    </div>`
-        $(".row").append(template)
-    }
-}
-
 Implementation = function (array) {
     initializetionOfGraph(graph)
     //clear appends
-
     ClearGraph()
     // add appends
     AddGraph(array)
@@ -672,100 +674,135 @@ Implementation = function (array) {
             })
     }
 }
+//--- Main ---//
 
 
-// convertUnixToDate = function(u){
-//   //remove unnecessary numbers from fetched data
-//   var s = u.replace(/\D/g,'');
-//   // converting string to number
-//   var x = Number(s)
-//   console.log("UNIX timestamp: " + x);
-//   //covnerting unix timestamp to datetime
-//   var d = moment.unix(x).format("YYYY MMM Do");
-//   console.log("Date: " + d);
-//   return d;
-// }
+//Store of comments
+Comments = function(){
+    //Filters for getting data
+    //FileterSet 01
+    // filterSet = [
+    //   "startDate ge datetimeoffset'2018-02-26T00:00:00+09:00' and endDate le datetimeoffset'2018-03-06T00:00:00+09:00' and type eq 'HKQuantityTypeIdentifierBasalEnergyBurned'",
+    //   "startDate ge datetimeoffset'2018-02-26T00:00:00+09:00' and endDate le datetimeoffset'2018-03-06T00:00:00+09:00' and type eq 'HKQuantityTypeIdentifierActiveEnergyBurned'",
+    //   "startDate ge datetimeoffset'2018-02-26T00:00:00+09:00' and endDate le datetimeoffset'2018-03-06T00:00:00+09:00' and type eq 'HKQuantityTypeIdentifierDistanceWalkingRunning'",
+    //   "startDate ge datetimeoffset'2018-02-26T00:00:00+09:00' and endDate le datetimeoffset'2018-03-06T00:00:00+09:00' and type eq 'HKQuantityTypeIdentifierStepCount'",
+    //   "startDate ge datetimeoffset'2018-02-26T00:00:00+09:00' and endDate le datetimeoffset'2018-03-06T00:00:00+09:00' and type eq 'HKQuantityTypeIdentifierHeartRate'"
+    //   ]
+    // filterSet = [
+    //   "endDate ge datetimeoffset'2017-01-01T00:00:00+09:00' and type eq 'HKQuantityTypeIdentifierBasalEnergyBurned'",
+    //   "endDate ge datetimeoffset'2017-01-01T00:00:00+09:00' and type eq 'HKQuantityTypeIdentifierActiveEnergyBurned'",
+    //   "endDate ge datetimeoffset'2017-01-01T00:00:00+09:00' and type eq 'HKQuantityTypeIdentifierDistanceWalkingRunning'",
+    //   "endDate ge datetimeoffset'2017-01-01T00:00:00+09:00' and type eq 'HKQuantityTypeIdentifierStepCount'",
+    //   "endDate ge datetimeoffset'2017-01-01T00:00:00+09:00' and type eq 'HKQuantityTypeIdentifierHeartRate'"
+    // ]
 
-//HeartRateDate for Bubble Chart
-// let heartRate = [];
-// HeartRateData = function(n,span){
-//     let num = 0;
+    //FilterSet02
+    // filterSet = [
+    //     "type eq 'HKQuantityTypeIdentifier'"+dataSet[0],
+    //     "type eq 'HKQuantityTypeIdentifierActiveEnergyBurned'",
+    //     "type eq 'HKQuantityTypeIdentifierDistanceWalkingRunning'",
+    //     "type eq 'HKQuantityTypeIdentifierStepCount'",
+    //     // "type eq 'HKQuantityTypeIdentifierHeartRate'"
+    // ]
 
-//     for (i = 0; i < numberOfData; i++) {
-//         if (endDateArray[i][0] == startDateArray[i][0] && endDateArray[i][1] == startDateArray[i][1]) {
-//             for (j in span) {
-//                 if (span[j][0] == endDateArray[i][0] && span[j][1] == endDateArray[i][1]) {
-//                     let test = {
-//                         x: null,
-//                         y: null,
-//                         r: 5
-//                     }
-//                     // test.x = endDateArray[i][1]
-//                     test.x = span[j][0] + "/" + span[j][1]
-//                     test.y = valueSet[n][i];
-//                     // console.log('HeartRateData ' + test);
-//                     heartRate[num] = test;
-//                     num++;
-//                     // console.log('test.x '+ test.x);
-//                 }
-//             }
-//         }
-//     }
-// }
+    //From form in SetTimeOfGraph()
+    // var userStartDate = inputToArray($("#startDate").val())
+    // var userEndDate = inputToArray($("#endDate").val())
+
+    // convertUnixToDate = function(u){
+    //   //remove unnecessary numbers from fetched data
+    //   var s = u.replace(/\D/g,'');
+    //   // converting string to number
+    //   var x = Number(s)
+    //   console.log("UNIX timestamp: " + x);
+    //   //covnerting unix timestamp to datetime
+    //   var d = moment.unix(x).format("YYYY MMM Do");
+    //   console.log("Date: " + d);
+    //   return d;
+    // }
+
+    //HeartRateDate for Bubble Chart
+    // let heartRate = [];
+    // HeartRateData = function(n,span){
+    //     let num = 0;
+
+    //     for (i = 0; i < numberOfData; i++) {
+    //         if (endDateArray[i][0] == startDateArray[i][0] && endDateArray[i][1] == startDateArray[i][1]) {
+    //             for (j in span) {
+    //                 if (span[j][0] == endDateArray[i][0] && span[j][1] == endDateArray[i][1]) {
+    //                     let test = {
+    //                         x: null,
+    //                         y: null,
+    //                         r: 5
+    //                     }
+    //                     // test.x = endDateArray[i][1]
+    //                     test.x = span[j][0] + "/" + span[j][1]
+    //                     test.y = valueSet[n][i];
+    //                     // console.log('HeartRateData ' + test);
+    //                     heartRate[num] = test;
+    //                     num++;
+    //                     // console.log('test.x '+ test.x);
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
 
 
-//Bubble Chart
-// HeartRateBubbleChart = function(position,n){
-//     var myChart = document.getElementById(position).getContext("2d");
-//     var routin = -1;
-//     graph = new Chart(myChart, {
-//         type: 'bubble',
-//         data: {
-//             labels: chartDailyTime,
-//             datasets: [{
-//                 label: 'HeartRate',
-//                 data: heartRate,//HeartRateDate()
-//                 backgroundColor: "rgb(33, 255, 14)",
-//                 fillColor: "rgb(33, 255, 14)",
-//                 borderColor: "rgb(33, 255, 14)",
-//             }]
-//         },
-//         options: {
-//             title: {
-//                 display: true,
-//                 text: dataSet[n],
-//                 fontSize: 22
-//             },
-//             legend: {
-//                 display: true,
-//                 position: "right",
-//             },
-//             layout: {
-//                 padding: 50
-//             },
-//             scales: {
-//                 xAxes: [{
-//                     ticks: {
-//                         stepSize: 0.5,
-//                         callback: function (value, index, values) {
-//                             // if (index < chartDailyTime.length) {
-//                             //     return chartDailyTime[index];
-//                             // }
-//                             console.log('value'+ value);
-//                             console.log('index'+ index);
-//                             console.log('values'+ values);
-//                             routin++;
-//                             console.log("chartDailyTime"+chartDailyTime[routin]);
-//                             return chartDailyTime[routin];
-//                         },
-//                         // min: chartDailyTime[0],
-//                         // max: chartDailyTime[chartDailyTime.length - 1]
-//                     },
-//                     position: 'bottom'
-//                 }],
-//                 yAxes: [{
-//                 }]
-//             }
-//         }
-//     })
-// }
+    //Bubble Chart
+    // HeartRateBubbleChart = function(position,n){
+    //     var myChart = document.getElementById(position).getContext("2d");
+    //     var routin = -1;
+    //     graph = new Chart(myChart, {
+    //         type: 'bubble',
+    //         data: {
+    //             labels: chartDailyTime,
+    //             datasets: [{
+    //                 label: 'HeartRate',
+    //                 data: heartRate,//HeartRateDate()
+    //                 backgroundColor: "rgb(33, 255, 14)",
+    //                 fillColor: "rgb(33, 255, 14)",
+    //                 borderColor: "rgb(33, 255, 14)",
+    //             }]
+    //         },
+    //         options: {
+    //             title: {
+    //                 display: true,
+    //                 text: dataSet[n],
+    //                 fontSize: 22
+    //             },
+    //             legend: {
+    //                 display: true,
+    //                 position: "right",
+    //             },
+    //             layout: {
+    //                 padding: 50
+    //             },
+    //             scales: {
+    //                 xAxes: [{
+    //                     ticks: {
+    //                         stepSize: 0.5,
+    //                         callback: function (value, index, values) {
+    //                             // if (index < chartDailyTime.length) {
+    //                             //     return chartDailyTime[index];
+    //                             // }
+    //                             console.log('value'+ value);
+    //                             console.log('index'+ index);
+    //                             console.log('values'+ values);
+    //                             routin++;
+    //                             console.log("chartDailyTime"+chartDailyTime[routin]);
+    //                             return chartDailyTime[routin];
+    //                         },
+    //                         // min: chartDailyTime[0],
+    //                         // max: chartDailyTime[chartDailyTime.length - 1]
+    //                     },
+    //                     position: 'bottom'
+    //                 }],
+    //                 yAxes: [{
+    //                 }]
+    //             }
+    //         }
+    //     })
+    // }
+
+}
